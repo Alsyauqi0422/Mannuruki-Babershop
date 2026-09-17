@@ -439,33 +439,46 @@ function doPost(e) {
        SIMPAN KE SPREADSHEET
        ----------------------------------------------- */
 
-    sheet.appendRow([
+    /*
+     * SIMPAN NOMOR WHATSAPP SEBAGAI TEXT
+     *
+     * Tujuannya agar angka 0 di depan nomor tidak hilang.
+     * Contoh:
+     * 081234567890 -> tetap 081234567890
+     * bukan         -> 81234567890
+     */
 
-      String(record.code).trim(),
+    const phone = normalizePhone(record.phone);
 
-      String(record.name).trim(),
+    const newRow = sheet.getLastRow() + 1;
 
-      normalizePhone(record.phone),
+    /*
+     * Kolom C = WhatsApp.
+     * Dipaksa menjadi format TEXT sebelum data ditulis.
+     */
+    sheet
+      .getRange(newRow, 3)
+      .setNumberFormat("@");
 
-      servicesText,
-
-      String(record.barberName || "").trim(),
-
-      String(record.barberId).trim(),
-
-      normalizeDate(record.date),
-
-      normalizeTime(record.time),
-
-      total,
-
-      String(record.notes || "").trim(),
-
-      status,
-
-      createdAt
-
-    ]);
+    /*
+     * Tulis seluruh data ke baris baru.
+     */
+    sheet
+      .getRange(newRow, 1, 1, HEADERS.length)
+      .setValues([[
+        String(record.code).trim(),
+        String(record.name).trim(),
+        phone,
+        servicesText,
+        String(record.barberName || "").trim(),
+        String(record.barberId).trim(),
+        normalizeDate(record.date),
+        normalizeTime(record.time),
+        total,
+        String(record.notes || "").trim(),
+        status,
+        createdAt
+      ]]);
 
 
     SpreadsheetApp.flush();
@@ -783,6 +796,10 @@ function setupSheet(sheet) {
     .setNumberFormat("@");
 
 
+  /*
+   * Kolom WhatsApp selalu TEXT.
+   * Ini menjaga angka 0 di depan nomor telepon.
+   */
   sheet
     .getRange("C:C")
     .setNumberFormat("@");
